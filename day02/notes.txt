@@ -1,0 +1,101 @@
+一、宕机：
+	在其他语言里，宕机往往以异常的形式存在，底层抛出异常，上层逻辑通过 try/catch 机制捕获异常，没有被捕获的严重异常会导致宕机，捕获的异常可以被忽略，让代码继续运行。
+Go语言没有异常系统，其使用 panic 触发宕机类似于其他语言的抛出异常，recover 的宕机恢复机制就对应其他语言中的 try/catch 机制。
+
+二、
+/*************************02Gorouteine.go*******************************/
+
+// 这里应该是开启了两个线程，但是这段代码无法打印
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func PrintNum(tag string, n int) {
+	for i := 0; i < n; i++ {
+		fmt.Println("[", tag, "]: ", i)
+	}
+}
+func main() {
+	go PrintNum("Thread1", 10)
+	go PrintNum("MainThread", 10)
+
+	//time.Sleep(time.Second)	// 这里开启等待时间后，代码打印，应该是类似C中，线程设置分离属性，主线程没有等待其余线程返回，直接结束了
+}
+
+// 还有一个问题是，哪怕Sleep后，代码开始打印，但是按照顺序来的，测试多次，打印范围变为100，依旧是顺序打印，没有体现多线程的特性（电脑性能太好？）
+result:
+[ Thread1 ]:  0
+[ Thread1 ]:  1
+[ Thread1 ]:  2
+[ Thread1 ]:  3
+[ Thread1 ]:  4
+[ Thread1 ]:  5
+[ Thread1 ]:  6
+[ Thread1 ]:  7
+[ Thread1 ]:  8
+[ Thread1 ]:  9
+[ MainThread ]:  0
+[ MainThread ]:  1
+[ MainThread ]:  2
+[ MainThread ]:  3
+[ MainThread ]:  4
+[ MainThread ]:  5
+[ MainThread ]:  6
+[ MainThread ]:  7
+[ MainThread ]:  8
+[ MainThread ]:  9
+
+/**************************02Struct.go******************************/
+
+go中结构体的实例化貌似和C里面不同，先实例化了一个对象，调用函数赋值后，得到的还是空
+
+package main
+
+import "fmt"
+
+type Cat struct {
+	Color string
+	Name  string
+}
+
+func (cat Cat) NewCatByName(name string) {
+	fmt.Println("Set cat name:")
+	cat.Name = name
+	fmt.Println(cat)	// {balck }
+}
+
+func (cat Cat) NewCatByColor(color string) {
+	fmt.Println("Set cat color:")
+	cat.Color = color
+	fmt.Println(cat)	// { lk}
+}
+
+// 如果要类似C里面对对象成员做改动，那么应该定义为指针类型，否则无法改动，指针类型调用方法也是 "."
+func (cat *Cat) ModifyColor(color string) {
+	fmt.Println("Modify color:")
+	cat.Color = color
+}
+
+func main() {
+	var cat Cat
+	// cat := &Cat{}
+	cat.NewCatByColor("balck")
+	cat.NewCatByName("lk")
+	fmt.Println(cat)
+
+	ModCat := Cat{
+		Name:  "kitty",
+		Color: "white",
+	}
+	fmt.Println(ModCat)		// {white kitty}
+	ModCat.ModifyColor("blue")
+	fmt.Println(ModCat)		// {blue kitty}
+}
+
+/**************************02Interface.go******************************/
+
+按理解应该是 Interface 一般情况下需要和 Struct 一起使用，Interface 定义方法，Struct来具体的来实现这些方法，有点像是C++中的继承，Interface类似虚基类
+但不太理解既然如此为什么不直接Struct定义方法就好了，是为了实现多态吗，一个Interface对象可以指向多个实现了它方法的Struct
