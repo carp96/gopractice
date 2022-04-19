@@ -1,0 +1,5 @@
+1、如int等基本数据类型，不能成为interface方法的接受者，可以通过 type 来起别名
+
+2、某种类型只要定义了interface的所有方法，那么就可以和对应的interface类型做值传递（类似于C++中，可以用interface指针指向该类型，并且调用方法）
+
+3、某个interface A 是另一个interface B 的成员的话，那么只要A的方法被定义了，B类型的变量可以直接使用A的方法
