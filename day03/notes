@@ -3,3 +3,17 @@
 2、某种类型只要定义了interface的所有方法，那么就可以和对应的interface类型做值传递（类似于C++中，可以用interface指针指向该类型，并且调用方法）
 
 3、某个interface A 是另一个interface B 的成员的话，那么只要A的方法被定义了，B类型的变量可以直接使用A的方法
+
+4、比如，有一个这样的接口：
+    type C interface {
+        SubStr()
+    }
+现在有个结构体 st ，实现了Substr方法，但是通过指针来接收：
+    func (s *st) SubStr() {
+        //
+    }
+那么，定义了：
+    var cx C
+    var s *st
+    cx = s
+这种情况下，cx不能解引用，本质上，它应该还是个地址，但语法里面应该把它当成了 C 类型的变量，很奇怪
